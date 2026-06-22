@@ -1,0 +1,455 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ФЛОРА - REST API",
+    "description": "REST API для магазинуФЛОРА",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    { "url": "https://flora-back.onrender.com", "description": "Production server" },
+    { "url": "http://localhost:3000", "description": "Local server" }
+  ],
+  "security": [],
+  "tags": [
+    { "name": "Bouquets", "description": "Операції з букетами" },
+    { "name": "Reviews", "description": "Відгуки покупців" },
+    { "name": "Orders", "description": "Замовлення покупців" }
+  ],
+  "paths": {
+    "/api/bouquets": {
+      "get": {
+        "tags": ["Bouquets"],
+        "summary": "Отримати всі букети",
+        "operationId": "getBouquets",
+        "parameters": [
+          {
+            "name": "favorite",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" },
+            "description": "Фільтр за статусом favorite"
+          },
+          {
+            "name": "_page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 1 },
+            "description": "Номер сторінки"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 8 },
+            "description": "Кількість елементів на сторінці"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список букетів",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Bouquet" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      },
+      "post": {
+        "tags": ["Bouquets"],
+        "summary": "Створити букет",
+        "operationId": "createBouquet",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BouquetCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Створений букет",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Bouquet" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/api/bouquets/{id}": {
+      "get": {
+        "tags": ["Bouquets"],
+        "summary": "Отримати букет за ID",
+        "operationId": "getBouquetById",
+        "parameters": [{ "$ref": "#/components/parameters/BouquetId" }],
+        "responses": {
+          "200": {
+            "description": "Об'єкт букету",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Bouquet" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["Bouquets"],
+        "summary": "Оновити букет (повне оновлення)",
+        "operationId": "updateBouquet",
+        "parameters": [{ "$ref": "#/components/parameters/BouquetId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BouquetUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Оновлений букет",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Bouquet" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Bouquets"],
+        "summary": "Видалити букет",
+        "operationId": "deleteBouquet",
+        "parameters": [{ "$ref": "#/components/parameters/BouquetId" }],
+        "responses": {
+          "200": {
+            "description": "Букет видалено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Букет видалено" },
+                    "id": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/bouquets/{id}/favorite": {
+      "patch": {
+        "tags": ["Bouquets"],
+        "summary": "Змінити статус favorite букету",
+        "operationId": "updateBouquetFavorite",
+        "parameters": [{ "$ref": "#/components/parameters/BouquetId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["favorite"],
+                "properties": {
+                  "favorite": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Оновлений букет",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Bouquet" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/bouquets/{id}/photo": {
+      "patch": {
+        "tags": ["Bouquets"],
+        "summary": "Завантажити фото для букету",
+        "operationId": "uploadBouquetPhoto",
+        "parameters": [{ "$ref": "#/components/parameters/BouquetId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["photo"],
+                "properties": {
+                  "photo": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Букет з новим photoURL",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Bouquet" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/reviews": {
+      "get": {
+        "tags": ["Reviews"],
+        "summary": "Отримати всі відгуки",
+        "operationId": "getReviews",
+        "responses": {
+          "200": {
+            "description": "Список відгуків",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Review" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Reviews"],
+        "summary": "Додати відгук",
+        "operationId": "createReview",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReviewCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Створений відгук",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Review" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/api/orders": {
+      "get": {
+        "tags": ["Orders"],
+        "summary": "Отримати всі замовлення",
+        "operationId": "getOrders",
+        "responses": {
+          "200": {
+            "description": "Список замовлень",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Order" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Orders"],
+        "summary": "Оформити замовлення",
+        "operationId": "createOrder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/OrderCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Створене замовлення",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Order" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Bouquet": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "title": { "type": "string", "example": "Весняна елегантність" },
+          "description": { "type": "string", "example": "Ніжне поєднання піонів, тюльпанів та троянд." },
+          "price": { "type": "integer", "example": 55 },
+          "photoURL": { "type": "string", "format": "uri", "example": "https://www.gravatar.com/avatar/abc123?s=300&d=retro" },
+          "favorite": { "type": "boolean", "example": false },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "BouquetCreate": {
+        "type": "object",
+        "required": ["title", "description", "price"],
+        "properties": {
+          "title": { "type": "string", "minLength": 2, "maxLength": 100, "example": "Весняна елегантність" },
+          "description": { "type": "string", "minLength": 5, "maxLength": 500, "example": "Ніжне поєднання піонів, тюльпанів та троянд." },
+          "price": { "type": "integer", "minimum": 0, "example": 55 },
+          "favorite": { "type": "boolean", "example": false }
+        }
+      },
+      "BouquetUpdate": {
+        "type": "object",
+        "minProperties": 1,
+        "properties": {
+          "title": { "type": "string", "minLength": 2, "maxLength": 100 },
+          "description": { "type": "string", "minLength": 5, "maxLength": 500 },
+          "price": { "type": "integer", "minimum": 0 },
+          "photoURL": { "type": "string", "format": "uri" },
+          "favorite": { "type": "boolean" }
+        }
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "text": { "type": "string", "example": "Неймовірний букет, дуже задоволена!" },
+          "author": { "type": "string", "example": "Олена Т." },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ReviewCreate": {
+        "type": "object",
+        "required": ["text", "author"],
+        "properties": {
+          "text": { "type": "string", "minLength": 5, "maxLength": 1000, "example": "Неймовірний букет!" },
+          "author": { "type": "string", "minLength": 2, "maxLength": 100, "example": "Олена Т." }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "bouquetId": { "type": "integer", "example": 3 },
+          "bouquetTitle": { "type": "string", "example": "Весняна елегантність" },
+          "bouquetPrice": { "type": "integer", "example": 55 },
+          "quantity": { "type": "integer", "example": 2 },
+          "total": { "type": "string", "example": "$110.00" },
+          "customerName": { "type": "string", "example": "Анна" },
+          "customerPhone": { "type": "string", "example": "+380 (50) 123-4567" },
+          "customerAddress": { "type": "string", "example": "вул. Квіткова 12, Київ" },
+          "customerComment": { "type": "string", "example": "Додайте, будь ласка, листівку." },
+          "status": { "type": "string", "example": "pending" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "OrderCreate": {
+        "type": "object",
+        "required": ["bouquet", "quantity", "total", "customer"],
+        "properties": {
+          "bouquet": {
+            "type": "object",
+            "required": ["id", "title", "price"],
+            "properties": {
+              "id": { "type": "integer", "example": 3 },
+              "title": { "type": "string", "example": "Весняна елегантність" },
+              "price": { "type": "integer", "example": 55 }
+            }
+          },
+          "quantity": { "type": "integer", "minimum": 1, "example": 2 },
+          "total": { "type": "string", "example": "$110.00" },
+          "customer": {
+            "type": "object",
+            "required": ["name", "phone", "address"],
+            "properties": {
+              "name": { "type": "string", "example": "Анна" },
+              "phone": { "type": "string", "example": "+380 (50) 123-4567" },
+              "address": { "type": "string", "example": "вул. Квіткова 12, Київ" },
+              "comment": { "type": "string", "example": "Додайте листівку." }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "BouquetId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "integer" },
+        "description": "ID букету",
+        "example": 1
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Назва обов'язкова" }
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": { "type": "string", "example": "Not found" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
